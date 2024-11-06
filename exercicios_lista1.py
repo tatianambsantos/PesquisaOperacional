@@ -302,3 +302,135 @@ plt.xlim(0, 220)
 plt.ylim(0, 130)
 plt.grid(True)
 plt.show()
+
+############################### EXERCICIO 11 #######################################################
+
+# Criar o modelo
+m = Model(sense=maximize)
+
+# Definir variáveis de decisão
+t_e = m.add_var(name="estudo", var_type=INTEGER)
+t_d = m.add_var(name="diversao", var_type=INTEGER)
+
+# Função objetivo (exemplo de maximização de lucro)
+m.objective = maximize(xsum([1 * t_e, 2 * t_d]))  # Ajuste os coeficientes conforme o problema
+
+# Restrições do problema
+m += t_d + t_e <= 10  # Restrição de tempo
+m += t_d <= t_e  # Restrição de proporção estudo e diversão
+m += t_d <= 4  # Restrição de tempo
+
+# Resolver o modelo
+status = m.optimize()
+
+# Exibir resultados
+if m.status == OptimizationStatus.OPTIMAL:
+    sol_t_d = t_d.x
+    sol_t_e = t_e.x
+    print(f"Quantidde de diversão: {t_d.x}")
+    print(f"Quantidde de estudo: {t_e.x}")
+    print(f"Lucro máximo: {m.objective_value}")
+else:
+    print("Solução não encontrada")
+
+# Gráficos das restrições
+x_vals = np.linspace(0, 10, 100)
+
+# Restrição de tempo total: t_d + t_e <= 10, rearranjada para t_d em função de t_e
+y1 = 10 - x_vals
+
+# Restrição de estudo >= diversão: t_d <= t_e
+y2 = x_vals
+
+# Restrição de diversão máxima: t_d <= 4
+y3 = np.full_like(x_vals, 4)
+
+# Plotar as restrições
+plt.figure(figsize=(8, 6))
+plt.plot(x_vals, y1, label=r"$t_d + t_e \leq 10$", color="blue")
+plt.plot(x_vals, y2, label=r"$t_d \leq t_e$", linestyle="--", color="green")
+plt.axhline(4, color="purple", linestyle="--", label=r"$t_d \leq 4$")
+
+# Preencher a região viável
+plt.fill_between(x_vals, 0, np.minimum(y1, np.minimum(y2, y3)), color="gray", alpha=0.3)
+
+# Plotar a solução ótima
+if m.status == OptimizationStatus.OPTIMAL:
+    plt.plot(sol_t_e, sol_t_d, 'ro', label="Solução Ótima")
+    plt.text(sol_t_e, sol_t_d, f"({sol_t_e:.1f}, {sol_t_d:.1f})", fontsize=12, ha="right")
+
+# Configurações do gráfico
+plt.xlabel("Horas de Estudo (t_e)")
+plt.ylabel("Horas de Diversão (t_d)")
+plt.title("Região Viável e Solução Ótima")
+plt.legend()
+plt.xlim(0, 10)
+plt.ylim(0, 10)
+plt.grid(True)
+plt.show()
+
+############################### EXERCICIO 12 #######################################################
+
+# Criar o modelo
+m = Model(sense=maximize)
+
+# Definir variáveis de decisão para os tipos de chapéu
+x_1 = m.add_var(name="chapeu1", var_type=INTEGER)
+x_2 = m.add_var(name="chapeu2", var_type=INTEGER)
+
+# Função objetivo: maximizar lucro
+m.objective = maximize(8 * x_1 + 5 * x_2)
+
+# Restrições do problema
+m += x_1 + x_2 / 2 <= 200  # Restrição de mão-de-obra reformulada
+m += x_1 <= 150            # Restrição de demanda para chapéu tipo 1
+m += x_2 <= 200            # Restrição de demanda para chapéu tipo 2
+
+# Resolver o modelo
+status = m.optimize()
+
+# Obter a solução ótima, se existir
+if m.status == OptimizationStatus.OPTIMAL:
+    sol_x_1 = x_1.x
+    sol_x_2 = x_2.x
+    print(f"Quantidade de chapéu tipo 1: {sol_x_1}")
+    print(f"Quantidade de chapéu tipo 2: {sol_x_2}")
+    print(f"Lucro máximo: {m.objective_value}")
+else:
+    print("Solução não encontrada")
+
+# Gráficos das restrições
+x_vals = np.linspace(0, 200, 200)
+
+# Restrição de mão-de-obra reformulada: x_1 + x_2 / 2 <= 200, rearranjada para x_2 em função de x_1
+y1 = 2 * (200 - x_vals)
+
+# Limite máximo de demanda para chapéu tipo 2 (linha horizontal)
+y2 = np.full_like(x_vals, 200)
+
+# Limite máximo de demanda para chapéu tipo 1 (linha vertical)
+x3 = np.full_like(x_vals, 150)
+
+# Plotar as restrições
+plt.figure(figsize=(8, 6))
+plt.plot(x_vals, y1, label=r"$x_1 + \frac{x_2}{2} \leq 200$", color="blue")
+plt.axhline(200, color="purple", linestyle="--", label=r"$x_2 \leq 200$")
+plt.axvline(150, color="green", linestyle="--", label=r"$x_1 \leq 150$")
+
+# Preencher a região viável
+plt.fill_between(x_vals, 0, np.minimum(y1, y2), where=(x_vals <= 150), color="gray", alpha=0.3)
+
+# Plotar a solução ótima
+if m.status == OptimizationStatus.OPTIMAL:
+    plt.plot(sol_x_1, sol_x_2, 'ro', label="Solução Ótima")
+    plt.text(sol_x_1, sol_x_2, f"({sol_x_1:.1f}, {sol_x_2:.1f})", fontsize=12, ha="right")
+
+# Configurações do gráfico
+plt.xlabel("Quantidade de chapéu tipo 1 (x_1)")
+plt.ylabel("Quantidade de chapéu tipo 2 (x_2)")
+plt.title("Região Viável e Solução Ótima")
+plt.legend()
+plt.xlim(0, 200)
+plt.ylim(0, 220)
+plt.grid(True)
+plt.show()
